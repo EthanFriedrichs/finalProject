@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "885008455506",
+    "project_id": "fir-tuesday-3a2ed",
+    "storage_bucket": "fir-tuesday-3a2ed.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:885008455506:android:ddf1fdaf41d11c062a0c8b",
+        "android_client_info": {
+          "package_name": "com.example.tuesday"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDlUbSsr6bqZJqakmXkhcezXZB4M56vknI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
