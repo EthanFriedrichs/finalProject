@@ -37,6 +37,7 @@ dependencies:
   firebase_core:
   cloud_firestore:
   flutter_launcher_icons: ^0.14.3
+  firebase_auth:
 
 flutter_icons:
   android: "launcher_icon"
