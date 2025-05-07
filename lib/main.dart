@@ -1,6 +1,9 @@
-import 'package:tuesday/pages/home.dart';
+import 'pages/login.dart';
+import 'pages/signup.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+
+
 
 void main() async{
 
@@ -14,37 +17,112 @@ void main() async{
           messagingSenderId: "885008455506",
           appId: "1:885008455506:web:b848607d5eddb8952a0c8b",
           ));
-  runApp(const MyApp());
+  runApp(MaterialApp(
+    home: Page1()
+  )
+  );
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class CustomDrawer extends StatelessWidget {
+  const CustomDrawer({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: <Widget>[
+          const DrawerHeader(
+            decoration: BoxDecoration(
+              color: Colors.blue,
+            ),
+            child: Text(
+              "Options",
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 30),
+            ),
+          ),
+
+          ListTile(
+            title: const Text("Chat"),
+            // onTap: () {
+            //   Navigator.push(
+            //     context,
+            //     MaterialPageRoute(builder: (context) => Page4()),
+            //   );
+            // },
+          ),
+
+
+          GestureDetector(
+            child: const ListTile(
+              title: Text("Logout"),
+            ),
+            onTap: () {
+              //used this before firebase
+              //DataClass.clearMessages();
+
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) => Page1()),
+                    (Route<dynamic> route) => false,
+              );
+            },
+          ),
+        ],
       ),
-      home:  MyHomePage(),
     );
   }
 }
+
+
+class Page1 extends StatefulWidget {
+  @override
+  State<Page1> createState() => _Page1State();
+}
+class _Page1State extends State<Page1> {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Welcome Screen')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) {
+                          return Page2();
+                        }
+                    )
+                );
+              },
+
+              child: Text("Login"),
+            ),
+
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) {
+                          return Page3();
+                        }
+                    )
+                );
+              },
+
+              child: Text("Signup"),
+            ),
+          ],
+        ),
+
+      ),
+    );
+  }
+}
+
 
