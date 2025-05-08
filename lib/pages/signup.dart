@@ -1,30 +1,37 @@
-import 'chat.dart';
+import 'dart:developer';
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+import 'login.dart';
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 
-class Page3 extends StatefulWidget {
+
+
+class Page2 extends StatefulWidget {
   @override
-  State<Page3> createState() => _Page3State();
+  State<Page2> createState() => _Page2State();
 }
 
-class _Page3State extends State<Page3> {
-
+class _Page2State extends State<Page2> {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
+  final TextEditingController _cpasswordController = TextEditingController();
   bool isButtonEnabled = false;
 
   @override
   void initState() {
     super.initState();
-    // Add listeners to both text fields
     _emailController.addListener(_updateButtonState);
     _passwordController.addListener(_updateButtonState);
+    _cpasswordController.addListener(_updateButtonState);
   }
 
   void _updateButtonState() {
     setState(() {
       isButtonEnabled = _emailController.text.isNotEmpty &&
-          _passwordController.text.isNotEmpty;
+          _passwordController.text.isNotEmpty &&
+          _cpasswordController.text.isNotEmpty && _passwordController.text == _cpasswordController.text;
     });
   }
 
@@ -32,10 +39,63 @@ class _Page3State extends State<Page3> {
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _cpasswordController.dispose();
     super.dispose();
   }
 
+  Future<bool> firebaseSignup(email, password) async {
+    log("email $email password $password");
+    try {
+      UserCredential userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
+      String uid = userCredential.user!.uid;
+
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(uid)
+          .set({
+        'email': _emailController.text.trim(),
+        'firstname': '',
+        'lastname': '',
+        'profile': '',
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Signup successful')), ) ;
+
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) =>  Page3()),
+      );
+      return true;
+
+    } on FirebaseAuthException catch (e) {
+      printError(e);
+      return false;
+    } catch (e) {
+      print(e);
+      return false;
+    }
+  }
+
+  void printError(FirebaseAuthException e){
+    if (e.code == 'weak-password') {
+      print('The password provided is too weak.');
+    } else if (e.code == 'email-already-in-use') {
+      print('The account already exists for that email.');
+    }else if (e.code == 'invalid-email') {
+      print('The email address is not valid.');
+    }else if (e.code == 'user-not-found') {
+      print('There is no user by this email');
+    }else if (e.code == 'wrong-password') {
+      print('Wrong password');
+    }
+
+
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -45,7 +105,6 @@ class _Page3State extends State<Page3> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-
             //input email
             SizedBox(
               width: MediaQuery.of(context).size.width / 2 + 35,
@@ -74,16 +133,29 @@ class _Page3State extends State<Page3> {
 
             SizedBox(height: 25,),
 
+            //confirm password
+            SizedBox(
+              width: MediaQuery.of(context).size.width / 2 + 35,
+              child: TextField(
+                controller: _cpasswordController,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                  labelText: 'Confirm Password',
+                ),
+              ),
+            ),
+
+            SizedBox(height: 25,),
+
             ElevatedButton(
               onPressed: isButtonEnabled
-                  ? () {
-                Navigator.pushAndRemoveUntil(
-                  context,
-                  MaterialPageRoute(builder: (context) => Page4()),
-                      (Route<dynamic> route) => false, // removes all previous routes
-                );
+                  ? () async {
+                //log("email ${_emailController.text} password ${_passwordController.text}");
+
+                await firebaseSignup(_emailController.text, _passwordController.text);
+
               }
-                  : null, // disables the button
+                  : null,
               child: const Text("Create Account"),
             ),
           ],
