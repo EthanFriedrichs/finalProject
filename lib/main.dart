@@ -1,16 +1,15 @@
 import 'pages/login.dart';
 import 'pages/signup.dart';
+import 'pages/chatList.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-
-
 
 void main() async{
 
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
       options: const FirebaseOptions(
-          apiKey: "AIzaSyCbIVleeWSrCrL9PUGXz6slbrLtlM36iNA-A",
+          apiKey: "AIzaSyCbIVleeWSrCrL9PUGXz6slbrLtlM36iNA",
           authDomain: "fir-tuesday-3a2ed.firebaseapp.com",
           projectId: "fir-tuesday-3a2ed",
           storageBucket: "fir-tuesday-3a2ed.firebasestorage.app",
@@ -18,7 +17,7 @@ void main() async{
           appId: "1:885008455506:web:b848607d5eddb8952a0c8b",
           ));
   runApp(MaterialApp(
-    home: Page1()
+    home: Page1() // ChatsPage(userEmail: 'admin@gmail.com')
   )
   );
 }
