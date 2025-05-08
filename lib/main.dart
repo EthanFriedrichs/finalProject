@@ -1,11 +1,10 @@
 import 'pages/signup.dart';
+import 'pages/chatList.dart';
 import 'pages/login.dart';
 import 'pages/account.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-
-
 
 
 void main() async{
@@ -22,7 +21,7 @@ void main() async{
       ));
 
   runApp(MaterialApp(
-    home: Page1()
+    home: Page1() // ChatsPage(userEmail: 'admin@gmail.com')
   )
   );
 }
