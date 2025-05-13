@@ -147,17 +147,22 @@ class _ChatsPageState extends State<ChatsPage> {
           ),
         ],
       ),
-      body: FutureBuilder<List<Chat>>(
-        future: fetchUserChats(),
+      body: StreamBuilder<QuerySnapshot>(
+        stream: FirebaseFirestore.instance
+            .collection('chats')
+            .where('includedUsers', arrayContains: FirebaseAuth.instance.currentUser?.email)
+            .snapshots(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: LinearProgressIndicator());
           } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
             return Center(child: Text('No chats found'));
           } else {
-            final chats = snapshot.data!;
+            final chatDocs = snapshot.data!.docs;
+            final chats = chatDocs.map((doc) => Chat.fromMap(doc.data() as Map<String, dynamic>, doc.id)).toList();
+
             return ListView.builder(
               itemCount: chats.length,
               itemBuilder: (context, index) {
@@ -165,8 +170,7 @@ class _ChatsPageState extends State<ChatsPage> {
                 return ListTile(
                   title: Text(chat.roomName),
                   subtitle: Text('Users: ${chat.includedUsers.join(', ')}'),
-                  onTap: () async {
-                    final messages = await fetchMessages(chat.roomName);
+                  onTap: () {
                     Navigator.push(
                       context,
                       MaterialPageRoute(

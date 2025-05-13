@@ -1,16 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'account.dart';
 
 class Message {
   final String senderEmail;
+  final String senderUid;
   final String text;
 
-  Message({required this.senderEmail, required this.text});
+  Message({
+    required this.senderEmail,
+    required this.text,
+    required this.senderUid,
+  });
 
   factory Message.fromMap(Map<String, dynamic> data) {
     return Message(
       senderEmail: data['senderEmail'],
+      senderUid: data['senderUid'],
       text: data['text'],
     );
   }
@@ -85,6 +92,7 @@ class _Page4State extends State<Page4> {
         .collection('messages')
         .add({
       'senderEmail': currentUserEmail,
+      'senderUid': FirebaseAuth.instance.currentUser?.uid,
       'text': text.trim(),
       'timestamp': FieldValue.serverTimestamp(),
     });
@@ -128,10 +136,20 @@ class _Page4State extends State<Page4> {
                   itemBuilder: (context, index) {
                     final message = messages[index];
                     final isMe = message.senderEmail == currentUserEmail;
-                    return MessageBubble(
-                      senderEmail: message.senderEmail,
-                      text: message.text,
-                      isMe: isMe,
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => Page6(userId: message.senderUid),
+                          ),
+                        );
+                      },
+                      child: MessageBubble(
+                        senderEmail: message.senderEmail,
+                        text: message.text,
+                        isMe: isMe,
+                      ),
                     );
                   },
                 );
