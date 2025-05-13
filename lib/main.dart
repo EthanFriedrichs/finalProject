@@ -15,16 +15,20 @@ final themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.light);  // Default the
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: const FirebaseOptions(
-      apiKey: "AIzaSyCbIVleeWSrCrL9PUGXz6slbrLtlM36iNA",
-      authDomain: "fir-tuesday-3a2ed.firebaseapp.com",
-      projectId: "fir-tuesday-3a2ed",
-      storageBucket: "fir-tuesday-3a2ed.firebasestorage.app",
-      messagingSenderId: "885008455506",
-      appId: "1:885008455506:web:b848607d5eddb8952a0c8b",
-    ),
+      options: const FirebaseOptions(
+          apiKey: "AIzaSyCbIVleeWSrCrL9PUGXz6slbrLtlM36iNA",
+          authDomain: "fir-tuesday-3a2ed.firebaseapp.com",
+          projectId: "fir-tuesday-3a2ed",
+          storageBucket: "fir-tuesday-3a2ed.firebasestorage.app",
+          messagingSenderId: "885008455506",
+          appId: "1:885008455506:web:b848607d5eddb8952a0c8b"
+      ));
+
+  runApp(MaterialApp(
+    home: Page1()
+  )
   );
-  runApp(MyApp());
+  //runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {

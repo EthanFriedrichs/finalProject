@@ -3,6 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:tuesday/pages/chatList.dart';
 
 class Page3 extends StatefulWidget {
   @override
@@ -57,7 +58,7 @@ class _Page3State extends State<Page3> {
 
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) =>  Page4()),
+        MaterialPageRoute(builder: (context) =>  ChatsPage()),
       );
       return true;
     } on FirebaseAuthException catch (e) {
@@ -120,7 +121,7 @@ class _Page3State extends State<Page3> {
 
                   Navigator.pushAndRemoveUntil(
                     context,
-                    MaterialPageRoute(builder: (context) => Page4()),
+                    MaterialPageRoute(builder: (context) => ChatsPage()),
                         (Route<dynamic> route) => false,
                   );
                 }
