@@ -1,9 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-
 import 'chat.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:tuesday/pages/chatList.dart';
+import '../main.dart';
 
 class Page3 extends StatefulWidget {
   @override
@@ -52,24 +52,23 @@ class _Page3State extends State<Page3> {
         });
       }
 
+
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Login successful')),
       );
 
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) =>  ChatsPage()),
-      );
       return true;
     } on FirebaseAuthException catch (e) {
-      if (e.code == 'weak-password') {
-        print('The password provided is too weak.');
-      } else if (e.code == 'email-already-in-use') {
-        print('The account already exists for that email.');
+      if (e.code == 'user-not-found') {
+        print('No user found for that email.');
+      } else if (e.code == 'wrong-password') {
+        print('Wrong password provided for that user.');
+      } else {
+        print('Auth error: ${e.message}');
       }
       return false;
     } catch (e) {
-      print(e);
+      print('Unexpected error: $e');
       return false;
     }
   }
@@ -115,15 +114,24 @@ class _Page3State extends State<Page3> {
 
             ElevatedButton(
               onPressed: isButtonEnabled
-                  ? () {
+                  ? () async {
                 if (_emailController.text.isNotEmpty && _passwordController.text.isNotEmpty) {
-                  firebaseSignIn(_emailController.text, _passwordController.text);
-
-                  Navigator.pushAndRemoveUntil(
-                    context,
-                    MaterialPageRoute(builder: (context) => ChatsPage()),
-                        (Route<dynamic> route) => false,
+                  bool success = await firebaseSignIn(
+                    _emailController.text,
+                    _passwordController.text,
                   );
+
+                  if (success) {
+                    Navigator.pushAndRemoveUntil(
+                      context,
+                      MaterialPageRoute(builder: (context) => ChatsPage()),
+                          (Route<dynamic> route) => false,
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Login failed. Please check your credentials.')),
+                    );
+                  }
                 }
               }
                   : null,
