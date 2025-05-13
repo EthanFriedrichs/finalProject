@@ -7,13 +7,19 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat.dart';
 
 class Chat {
+  final String id; // <-- Firestore document ID
   final String roomName;
   final List<String> includedUsers;
 
-  Chat({required this.roomName, required this.includedUsers});
+  Chat({
+    required this.id,
+    required this.roomName,
+    required this.includedUsers,
+  });
 
-  factory Chat.fromMap(Map<String, dynamic> data) {
+  factory Chat.fromMap(Map<String, dynamic> data, String id) {
     return Chat(
+      id: id,
       roomName: data['roomName'],
       includedUsers: List<String>.from(data['includedUsers']),
     );
@@ -53,7 +59,9 @@ Future<List<Chat>> fetchUserChats() async {
       .where('includedUsers', arrayContains: userEmail)
       .get();
 
-  return querySnapshot.docs.map((doc) => Chat.fromMap(doc.data())).toList();
+  return querySnapshot.docs
+      .map((doc) => Chat.fromMap(doc.data(), doc.id)) // <-- include doc.id
+      .toList();
 }
 
 Future<String?> getUserEmail(String uid) async {
@@ -72,16 +80,27 @@ Future<String?> getUserEmail(String uid) async {
 }
 
 Future<List<Message>> fetchMessages(String chatId) async {
-  final querySnapshot = await FirebaseFirestore.instance
-      .collection('chats')
-      .doc(chatId)
-      .collection('messages')
-      .orderBy('timestamp') // Assuming you have a timestamp field
-      .get();
+  try {
+    print("CHATID:");
+    print(chatId);
+    final querySnapshot = await FirebaseFirestore.instance
+        .collection('chats')
+        .doc(chatId)
+        .collection('messages')
+        .get();
 
-  return querySnapshot.docs.map((doc) => Message.fromMap(doc.data())).toList();
+    if (querySnapshot.docs.isEmpty) {
+      print('No messages found');
+    } else {
+      print('Messages found: ${querySnapshot.docs.length}');
+    }
+
+    return querySnapshot.docs.map((doc) => Message.fromMap(doc.data())).toList();
+  } catch (e) {
+    print('Error fetching messages: $e');
+    return [];
+  }
 }
-
 
 class ChatsPage extends StatelessWidget {
 
@@ -116,13 +135,13 @@ class ChatsPage extends StatelessWidget {
                   title: Text(chat.roomName),
                   subtitle: Text('Users: ${chat.includedUsers.join(', ')}'),
                   onTap: () async {
-                    final messages = await fetchMessages(chat.roomName); // Assuming roomName is unique
+                    final messages = await fetchMessages(chat.roomName);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
                         builder: (context) => Page4(
+                          chatId: chat.id,
                           roomName: chat.roomName,
-                          messages: messages,
                         ),
                       ),
                     );
