@@ -24,6 +24,17 @@ void main() async {
           appId: "1:885008455506:web:b848607d5eddb8952a0c8b"
       ));
 
+  final user = FirebaseAuth.instance.currentUser;
+  ThemeMode initialTheme = ThemeMode.light;
+
+  if (user != null) {
+    final userDoc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+    final themeStr = userDoc.data()?['theme'];
+    if (themeStr == 'dark') initialTheme = ThemeMode.dark;
+  }
+
+  themeNotifier.value = initialTheme;
+
   runApp(MyApp());
 }
 
@@ -105,6 +116,8 @@ class CustomDrawer extends StatelessWidget {
                 });
 
                 await FirebaseAuth.instance.signOut();
+
+                themeNotifier.value = ThemeMode.light;
 
                 Navigator.pushAndRemoveUntil(
                   context,

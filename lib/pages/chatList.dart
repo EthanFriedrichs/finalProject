@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'chat.dart';
+import 'newChatList.dart';
 
 class Chat {
   final String roomName;
@@ -83,30 +84,58 @@ Future<List<Message>> fetchMessages(String chatId) async {
 }
 
 
-class ChatsPage extends StatelessWidget {
+class ChatsPage extends StatefulWidget {
+  @override
+  _ChatsPageState createState() => _ChatsPageState();
+}
+
+class _ChatsPageState extends State<ChatsPage> {
+  @override
+  void initState() {
+    super.initState();
+    _loadUserTheme(); // Call your theme loading logic here
+  }
+
+  Future<void> _loadUserTheme() async {
+    final user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      final doc = await FirebaseFirestore.instance.collection('users').doc(user.uid).get();
+      final theme = doc.data()?['theme'];
+      if (theme == 'dark') {
+        themeNotifier.value = ThemeMode.dark;
+      } else {
+        themeNotifier.value = ThemeMode.light;
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text('Chats'),
+        actions: [
+          IconButton(
+            icon: Icon(Icons.add),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => CreateRoomDialog(),
+              );
+            },
+          ),
+        ],
       ),
       body: FutureBuilder<List<Chat>>(
         future: fetchUserChats(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: LinearProgressIndicator());
-          }
-
-          else if (snapshot.hasError) {
+          } else if (snapshot.hasError) {
             return Center(child: Text('Error: ${snapshot.error}'));
-          }
-
-          else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
             return Center(child: Text('No chats found'));
-          }
-
-          else {
+          } else {
             final chats = snapshot.data!;
             return ListView.builder(
               itemCount: chats.length,
@@ -116,7 +145,7 @@ class ChatsPage extends StatelessWidget {
                   title: Text(chat.roomName),
                   subtitle: Text('Users: ${chat.includedUsers.join(', ')}'),
                   onTap: () async {
-                    final messages = await fetchMessages(chat.roomName); // Assuming roomName is unique
+                    final messages = await fetchMessages(chat.roomName);
                     Navigator.push(
                       context,
                       MaterialPageRoute(
