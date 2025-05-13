@@ -24,11 +24,7 @@ void main() async {
           appId: "1:885008455506:web:b848607d5eddb8952a0c8b"
       ));
 
-  runApp(MaterialApp(
-    home: Page1()
-  )
-  );
-  //runApp(MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
