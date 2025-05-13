@@ -21,7 +21,7 @@ void main() async{
       ));
 
   runApp(MaterialApp(
-    home: Page1() // ChatsPage(userEmail: 'admin@gmail.com')
+    home: Page1()
   )
   );
 }

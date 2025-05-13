@@ -1,8 +1,10 @@
 // import 'dart:ffi';
-// import '../main.dart';
+import '../main.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 // import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'chat.dart';
 
 class Chat {
   final String roomName;
@@ -32,7 +34,20 @@ class Message {
   }
 }
 
-Future<List<Chat>> fetchUserChats(String userEmail) async {
+Future<List<Chat>> fetchUserChats() async {
+  final currentUser = FirebaseAuth.instance.currentUser;
+  final uid = currentUser?.uid;
+
+  if (uid == null) {
+    throw Exception('User is not logged in');
+  }
+
+  final userEmail = await getUserEmail(uid);
+
+  if (userEmail == null) {
+    throw Exception('User email not found');
+  }
+
   final querySnapshot = await FirebaseFirestore.instance
       .collection('chats')
       .where('includedUsers', arrayContains: userEmail)
@@ -41,10 +56,34 @@ Future<List<Chat>> fetchUserChats(String userEmail) async {
   return querySnapshot.docs.map((doc) => Chat.fromMap(doc.data())).toList();
 }
 
-class ChatsPage extends StatelessWidget {
-  final String userEmail;
+Future<String?> getUserEmail(String uid) async {
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('users')
+      .doc(uid)
+      .get();
 
-  ChatsPage({required this.userEmail});
+  if (querySnapshot.exists) {
+    return querySnapshot.data()?['email'] as String?;
+  }
+
+  else {
+    return null;
+  }
+}
+
+Future<List<Message>> fetchMessages(String chatId) async {
+  final querySnapshot = await FirebaseFirestore.instance
+      .collection('chats')
+      .doc(chatId)
+      .collection('messages')
+      .orderBy('timestamp') // Assuming you have a timestamp field
+      .get();
+
+  return querySnapshot.docs.map((doc) => Message.fromMap(doc.data())).toList();
+}
+
+
+class ChatsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
@@ -53,7 +92,7 @@ class ChatsPage extends StatelessWidget {
         title: Text('Chats'),
       ),
       body: FutureBuilder<List<Chat>>(
-        future: fetchUserChats(userEmail),
+        future: fetchUserChats(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return Center(child: LinearProgressIndicator());
@@ -76,13 +115,17 @@ class ChatsPage extends StatelessWidget {
                 return ListTile(
                   title: Text(chat.roomName),
                   subtitle: Text('Users: ${chat.includedUsers.join(', ')}'),
-                  onTap: () {
-                    // Navigator.push(
-                    //   context,
-                    //   MaterialPageRoute(
-                    //     builder: (context) => Message(senderEmail: '', text: ''),
-                    //   ),
-                    // );
+                  onTap: () async {
+                    final messages = await fetchMessages(chat.roomName); // Assuming roomName is unique
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => Page4(
+                          roomName: chat.roomName,
+                          messages: messages,
+                        ),
+                      ),
+                    );
                   },
                 );
               },
@@ -90,6 +133,7 @@ class ChatsPage extends StatelessWidget {
           }
         },
       ),
+      drawer: const CustomDrawer(),
     );
   }
 }

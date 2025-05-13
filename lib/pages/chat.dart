@@ -2,105 +2,77 @@ import '../main.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'chatList.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
-class Page4 extends StatefulWidget {
-  @override
-  State<Page4> createState() => _Page4State();
-}
+class MessageBubble extends StatelessWidget {
+  final String senderEmail;
+  final String text;
+  final bool isMe;
 
-class _Page4State extends State<Page4> {
+  MessageBubble({required this.senderEmail, required this.text, required this.isMe});
 
-  final TextEditingController _messageController = TextEditingController();
-  bool isButtonEnabled = false;
-
-  @override
-  void initState() {
-    super.initState();
-    // Add listeners to both text fields
-    _messageController.addListener(_updateButtonState);
-  }
-
-  void _updateButtonState() {
-    setState(() {
-      isButtonEnabled = _messageController.text.isNotEmpty;
-    });
-  }
-
-  void _sendMessage() {
-    String message = _messageController.text.trim();
-    if (message.isNotEmpty) {
-      //DataClass.addMessage(message);
-      _messageController.clear();
-      setState(() {}); // Refresh the UI to show the new message
-    }
-  }
-
-  @override
-  void dispose() {
-    _messageController.dispose();
-    super.dispose();
-  }
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: Text('Group Chat')),
-      body: Center(
+    return Align(
+      alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
+      child: Container(
+        padding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+        margin: EdgeInsets.symmetric(vertical: 5, horizontal: 10),
+        decoration: BoxDecoration(
+          color: isMe ? Colors.blueAccent : Colors.grey[300],
+          borderRadius: BorderRadius.circular(15),
+        ),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.end,
+          crossAxisAlignment: isMe ? CrossAxisAlignment.end : CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: ListView.builder(
-                  //itemCount: DataClass.getMessages().length,
-                  itemBuilder: (context, index) {
-                    return Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Align(
-                        alignment: Alignment.centerRight,
-                        child: GestureDetector(
-                          // onTap: () {
-                          //   Navigator.push(
-                          //     context,
-                          //     MaterialPageRoute(builder: (context) => Page5()),
-                          //   );
-                          // },
-                          child: Container(
-                            padding: const EdgeInsets.all(12),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[300],
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            //child: Text(DataClass.getMessages()[index], style: TextStyle(fontSize: 30),),
-                          ),
-                        ),
-                      ),
-                    );
-                  },
-                ),
+            Text(
+              senderEmail,
+              style: TextStyle(
+                fontWeight: FontWeight.bold,
+                color: isMe ? Colors.white : Colors.black,
               ),
             ),
-            //input email
-            SizedBox(
-              width: MediaQuery.of(context).size.width / 2 + 35,
-              child: TextField(
-                controller: _messageController,
-                decoration: InputDecoration(
-                  border: const OutlineInputBorder(),
-                  labelText: 'New Message',
-                  suffixIcon: IconButton(
-                    icon: const Icon(Icons.send),
-                    onPressed: isButtonEnabled ? _sendMessage : null,
-                  ),
-                ),
+            SizedBox(height: 5),
+            Text(
+              text,
+              style: TextStyle(
+                color: isMe ? Colors.white : Colors.black,
               ),
             ),
-
-            SizedBox(height: 30,),
           ],
         ),
       ),
-      drawer: const CustomDrawer(),
+    );
+  }
+}
+
+class Page4 extends StatelessWidget {
+  final String roomName;
+  final List<Message> messages;
+
+  Page4({required this.roomName, required this.messages});
+
+  @override
+  Widget build(BuildContext context) {
+    final currentUserEmail = FirebaseAuth.instance.currentUser?.email;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(roomName),
+      ),
+      body: ListView.builder(
+        itemCount: messages.length,
+        itemBuilder: (context, index) {
+          final message = messages[index];
+          final isMe = message.senderEmail == currentUserEmail;
+          return MessageBubble(
+            senderEmail: message.senderEmail,
+            text: message.text,
+            isMe: isMe,
+          );
+        },
+      ),
     );
   }
 }
