@@ -24,6 +24,9 @@ class _Page6State extends State<Page6> {
   bool _isLoading = true;
   bool _isCurrentUser = true;
   String? _profileImageURL;
+  String? _status;
+  String? _lastActive;
+
 
   @override
   void initState() {
@@ -52,6 +55,7 @@ class _Page6State extends State<Page6> {
         _imageController.text = data['profile'] ?? '';
         _profileImageURL = data['profile'];
         _isLoading = false;
+        _status = data['status'];
       });
     } else {
       setState(() {
@@ -66,6 +70,20 @@ class _Page6State extends State<Page6> {
     _statusController.dispose();
     _imageController.dispose();
     super.dispose();
+  }
+
+  String _formatTimestamp(dynamic timestamp) {
+    if (timestamp is Timestamp) {
+      final dt = timestamp.toDate();
+      final now = DateTime.now();
+      final diff = now.difference(dt);
+
+      if (diff.inMinutes < 1) return 'Just now';
+      if (diff.inMinutes < 60) return '${diff.inMinutes} minutes ago';
+      if (diff.inHours < 24) return '${diff.inHours} hours ago';
+      return '${dt.month}/${dt.day}/${dt.year} at ${dt.hour}:${dt.minute.toString().padLeft(2, '0')}';
+    }
+    return '';
   }
 
   Future<void> _saveProfile() async {
@@ -93,21 +111,30 @@ class _Page6State extends State<Page6> {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(_isCurrentUser ? 'My Account' : 'User Profile')),
+      appBar: AppBar(title: Text(_isCurrentUser ? 'My Profile' : 'User Profile')),
       body: Column(
         children: [
           Expanded(
             flex: 1,
-            child: Center(
-              child: CircleAvatar(
-                radius: 80,
-                backgroundImage: _profileImageURL != null && _profileImageURL!.isNotEmpty
-                    ? NetworkImage(_profileImageURL!)
-                    : null,
-                child: _profileImageURL == null || _profileImageURL!.isEmpty
-                    ? const Icon(Icons.person, size: 80)
-                    : null,
-              ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 80,
+                  backgroundImage: _profileImageURL != null && _profileImageURL!.isNotEmpty
+                      ? NetworkImage(_profileImageURL!)
+                      : null,
+                  child: _profileImageURL == null || _profileImageURL!.isEmpty
+                      ? const Icon(Icons.person, size: 80)
+                      : null,
+                ),
+                const SizedBox(height: 12),
+                if (_status != null)
+                  Text(
+                    _status!,
+                    style: TextStyle(fontSize: 16, color: Colors.grey[700]),
+                  ),
+              ],
             ),
           ),
           Expanded(
